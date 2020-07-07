@@ -535,6 +535,81 @@ describe('simple schema test', () => {
 `;
         assert.strictEqual(result, expected, result);
     });
+    it('oneof properties schema', async () => {
+        const schema: JsonSchemaDraft04.Schema = {
+            id: '/test/include/Parameter',
+            type: 'object',
+            required: ['name'],
+            oneOf: [
+                {
+                "properties": {
+                    "sourceRepository": {
+                    "description": "source reference",
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "refs/heads/master"
+                    }
+                }
+                },
+                {
+                "properties": {
+                    "image": {
+                    "description": "image name",
+                    "type": "string",
+                    "minLength": 1,
+                    "example": "registry.navercorp.com/foo/api"
+                    }
+                }
+                },
+                {
+                "properties": {
+                    "options": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                    }
+                }
+                }
+            ],
+            properties: {
+                'name': {
+                    type: 'string',
+                },
+            },
+        };
+        const result = await dtsgenerator({ contents: [parseSchema(schema)] });
+
+        console.log(result);
+
+        const expected = `declare namespace Test {
+    namespace Include {
+        export type Parameter = {
+            name: string;
+        } & ({
+            /**
+             * source reference
+             * example:
+             * refs/heads/master
+             */
+            sourceRepository?: string;
+        } | {
+            /**
+             * image name
+             * example:
+             * registry.navercorp.com/foo/api
+             */
+            image?: string;
+        } | {
+            options?: string[];
+        });
+    }
+}
+`;
+        assert.strictEqual(result, expected, result);
+    });
     it(' model in multiple allOf', async () => {
         const schema: OpenApisV2.SchemaJson = {
             swagger: '2.0',

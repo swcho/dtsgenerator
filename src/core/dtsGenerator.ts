@@ -272,7 +272,13 @@ export default class DtsGenerator {
             return this.generateArrayedType(schema, content.anyOf, '/anyOf/', terminate);
         }
         if (content.oneOf) {
-            return this.generateArrayedType(schema, content.oneOf, '/oneOf/', terminate);
+            const nodeOneOf = this.generateArrayedType(schema, content.oneOf, '/oneOf/', terminate);
+            if (content.properties) {
+                return ts.createIntersectionTypeNode([
+                    this.generateType(schema, terminate),
+                    nodeOneOf]);
+            }
+            return nodeOneOf;
         }
         if (content.enum) {
             return ast.buildUnionTypeNode(content.enum, (value) => {
